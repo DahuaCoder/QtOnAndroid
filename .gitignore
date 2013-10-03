@@ -1,2 +1,2 @@
-android/bin/
-android/lib/
+android/bin/*
+android/libs/

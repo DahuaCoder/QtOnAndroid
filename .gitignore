@@ -1,3 +1,5 @@
+*~
 android/bin/
-android/libs/
 android/gen/
+android/libs/*
+!android/libs/armeabi-v7a

@@ -2,6 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QGeoPositionInfo>
+#include <QGeoPositionInfoSource>
+
+QTM_USE_NAMESPACE
 
 namespace Ui {
     class MainWindow;
@@ -25,14 +29,16 @@ public:
     void showExpanded();
 
 private slots:
-    void handleButtonPressed();
-    void handleButtonReleased();
     void handleButtonClicked();
+    void updatePosition(QGeoPositionInfo geoPositionInfo);
 
 private:
+    void startLocationAPI();
 
+private:
     Ui::MainWindow *ui;
-    int m_Counter;
+    bool m_IsLocationEnabled;
+    QGeoPositionInfoSource* m_pLocationInfo;
 };
 
 #endif // MAINWINDOW_H

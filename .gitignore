@@ -1,5 +1,4 @@
 *~
-android/bin/
-android/gen/
-android/libs/*
-!android/libs/armeabi-v7a
+android/bin
+android/gen
+android/libs

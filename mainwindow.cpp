@@ -4,21 +4,23 @@
 #include <QCoreApplication>
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QGeoCoordinate>
+
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      m_Counter(0)
+      m_IsLocationEnabled(false),
+      m_pLocationInfo(NULL)
 {
     ui->setupUi(this);
     this->setWindowTitle("QtOnAndroid");
 
-    setGeometry(QApplication::desktop()->screenGeometry());
-
     // Connect button signal to appropriate slot
-    connect(ui->pushButton, SIGNAL(pressed()), this, SLOT(handleButtonPressed()));
-    connect(ui->pushButton, SIGNAL(released()), this, SLOT(handleButtonReleased()));
-    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(handleButtonClicked()));
+    connect(ui->LocationButton, SIGNAL(clicked()), this, SLOT(handleButtonClicked()));
+
+    startLocationAPI();
 }
 
 MainWindow::~MainWindow()
@@ -40,23 +42,43 @@ void MainWindow::showExpanded()
     showMaximized();
     ui->infoLabel->setText("Maemo");
 #else
-    ui->infoLabel->setText("Some other platform");
-    ui->statusLabel->setText("Button released!");
+    ui->infoLabel->setText("Qt on Android");
+    ui->locationLabel->setText("Location Service disabled");
     showMaximized();
 #endif
 }
 
-void MainWindow::handleButtonPressed()
-{
-    ui->statusLabel->setText("Button pressed!");
-}
-
-void MainWindow::handleButtonReleased()
-{
-    ui->statusLabel->setText("Button released!");
-}
-
 void MainWindow::handleButtonClicked()
 {
-    ui->countLabel->setText(QString::number(++m_Counter));
+    m_IsLocationEnabled = !m_IsLocationEnabled;
+}
+
+void MainWindow::updatePosition(QGeoPositionInfo geoPositionInfo)
+{
+    if (geoPositionInfo.isValid()) {
+        // get current location coordinates
+        QGeoCoordinate geoCoordinate = geoPositionInfo.coordinate();
+        qreal latitude = geoCoordinate.latitude();
+        qreal longitude = geoCoordinate.longitude();
+
+        if (m_IsLocationEnabled) {
+            ui->locationLabel->setText(QString("Latitude: %1 / Longitude: %2").arg(latitude).arg(longitude));
+        }
+        else {
+            ui->locationLabel->setText(QString("Location Service disabled"));
+        }
+    }
+}
+
+void MainWindow::startLocationAPI()
+{
+    if (!m_pLocationInfo) {
+        m_pLocationInfo = QGeoPositionInfoSource::createDefaultSource(this);
+
+        m_pLocationInfo->setPreferredPositioningMethods(QGeoPositionInfoSource::NonSatellitePositioningMethods);
+        connect(m_pLocationInfo, SIGNAL(positionUpdated(QGeoPositionInfo)), this, SLOT(updatePosition(QGeoPositionInfo)));
+
+        // start listening for position updates
+        m_pLocationInfo->startUpdates();
+    }
 }
